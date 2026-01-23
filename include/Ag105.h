@@ -25,10 +25,19 @@
             Stream* debug_port;
 
         public:
+            //Constructor
             Ag105(uint8_t Ag105_Address_ = 0x30, TwoWire* i2c_port_ = &Wire, Stream* debug_port_= nullptr);
-            void begin();
-            uint8_t SetChargeCurrent(float current_value_mA);
-            float ReadChargeCurrent();
+
+            //setters
+            uint8_t setChargeCurrent(float current_value_mA);
+            uint8_t setBatteryVoltage(float battery_voltage);
+            uint8_t setMPPTVoltage(float MPPT_Voltage);
+
+            //Getters
+            float getChargeCurrent();
+            float getBatteryVoltage();
+            float getMPPTVoltage();
+
             
             
     };
