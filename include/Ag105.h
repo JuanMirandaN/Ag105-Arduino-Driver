@@ -1,4 +1,5 @@
 #ifndef AG105_CLASS
+    #include <stdint.h>
     #define AG105_CLASS
 
     //Field IDs
@@ -20,8 +21,17 @@
     class Ag105{
         private:
             uint8_t Ag105_Address;
+            TwoWire* i2c_port;
+            Stream* debug_port;
 
-    }
+        public:
+            Ag105(uint8_t Ag105_Address_ = 0x30, TwoWire* i2c_port_ = &Wire, Stream* debug_port_= nullptr);
+            void begin();
+            uint8_t SetChargeCurrent(float current_value_mA);
+            float ReadChargeCurrent();
+            
+            
+    };
 
 
 #endif
