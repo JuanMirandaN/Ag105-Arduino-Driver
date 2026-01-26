@@ -149,6 +149,37 @@ uint8_t Ag105::setTimeout(float Timeout){
 }
 
 
+uint8_t Ag105::setRecoveryTime(float RecoveryTime){
+    
+    if(RecoveryTime > 762.0){
+        RecoveryTime = 762;
+    }else if(RecoveryTime < 0.0){
+        RecoveryTime = 0.0;
+    }
+    
+    uint8_t I2C_value = round((RecoveryTime)/3.0);
+
+    i2c_port -> beginTransmission(Ag105_Address);
+    i2c_port -> write(RECOVERY_TIME);
+    i2c_port -> write(I2C_value);
+
+    uint8_t error = i2c_port -> endTransmission();
+    if (error != 0){
+
+        if(debug_port){
+            debug_port -> print("Error has ocurred in the transmission\n");
+        }
+
+        return 1;    
+    }
+
+    return 0;
+
+}
+
+
+
+
 float Ag105::getChargeCurrent(){
     uint8_t Status;
     uint8_t I2C_value;
@@ -281,4 +312,31 @@ int16_t Ag105::getTimeout(){
 
     Timeout = (int16_t)I2C_value * 3;
     return Timeout;
+}
+
+
+
+int16_t Ag105::getRecoveryTime(){
+    uint8_t I2C_value;
+    int16_t RecoveryTime;
+
+    i2c_port -> beginTransmission(Ag105_Address);
+    i2c_port -> write(RECOVERY_TIME);
+    i2c_port -> endTransmission();
+
+    if((i2c_port -> requestFrom(Ag105_Address, 2)) != 2){
+       
+        if(debug_port){
+            debug_port -> print("Error: There are less than 2 bytes available for reading");
+        }
+        return -1;
+
+    }
+
+    i2c_port -> read();//Status is ignored
+
+    I2C_value = i2c_port -> read();
+
+    RecoveryTime = (int16_t)I2C_value * 3;
+    return RecoveryTime;
 }
