@@ -120,7 +120,33 @@ uint8_t Ag105::setMPPTVoltage(float MPPT_Voltage){
 
 }
 
+uint8_t Ag105::setTimeout(float Timeout){
+    
+    if(Timeout > 762.0){
+        Timeout = 762;
+    }else if(Timeout < 0.0){
+        Timeout = 0.0;
+    }
+    
+    uint8_t I2C_value = round((Timeout)/3.0);
 
+    i2c_port -> beginTransmission(Ag105_Address);
+    i2c_port -> write(TIMEOUT);
+    i2c_port -> write(I2C_value);
+
+    uint8_t error = i2c_port -> endTransmission();
+    if (error != 0){
+
+        if(debug_port){
+            debug_port -> print("Error has ocurred in the transmission\n");
+        }
+
+        return 1;    
+    }
+
+    return 0;
+
+}
 
 
 float Ag105::getChargeCurrent(){
@@ -232,3 +258,27 @@ float Ag105::getMPPTVoltage(){
 }
 
 
+int16_t Ag105::getTimeout(){
+    uint8_t I2C_value;
+    int16_t Timeout;
+
+    i2c_port -> beginTransmission(Ag105_Address);
+    i2c_port -> write(TIMEOUT);
+    i2c_port -> endTransmission();
+
+    if((i2c_port -> requestFrom(Ag105_Address, 2)) != 2){
+       
+        if(debug_port){
+            debug_port -> print("Error: There are less than 2 bytes available for reading");
+        }
+        return -1;
+
+    }
+
+    i2c_port -> read();//Status is ignored
+
+    I2C_value = i2c_port -> read();
+
+    Timeout = (int16_t)I2C_value * 3;
+    return Timeout;
+}

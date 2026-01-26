@@ -32,11 +32,13 @@
             uint8_t setChargeCurrent(float current_value_mA);
             uint8_t setBatteryVoltage(float battery_voltage);
             uint8_t setMPPTVoltage(float MPPT_Voltage);
+            uint8_t setTimeout(float Timeout);
 
             //Getters
             float getChargeCurrent();
             float getBatteryVoltage();
             float getMPPTVoltage();
+            int16_t getTimeout();
 
             
             
