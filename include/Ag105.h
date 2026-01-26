@@ -34,6 +34,7 @@
             uint8_t setMPPTVoltage(float MPPT_Voltage);
             uint8_t setTimeout(float Timeout);
             uint8_t setRecoveryTime(float RecoveryTime);
+            uint8_t setJEITAProfile(bool Enable);
 
             //Getters
             float getChargeCurrent();
@@ -41,6 +42,10 @@
             float getMPPTVoltage();
             int16_t getTimeout();
             int16_t getRecoveryTime();
+            float getMeasuredBatteryVoltage();
+            float getMeasuredChargeCurrent();
+            float getMeasuredInputVoltage();
+            int8_t getJEITAProfile();
 
             
             

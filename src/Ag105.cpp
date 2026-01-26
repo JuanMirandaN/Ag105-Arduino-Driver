@@ -178,6 +178,27 @@ uint8_t Ag105::setRecoveryTime(float RecoveryTime){
 }
 
 
+uint8_t Ag105::setJEITAProfile(bool Enable){
+
+    i2c_port -> beginTransmission(Ag105_Address);
+    i2c_port -> write(EXTENDED_JEITA_PROFILE);
+    i2c_port -> write((uint8_t)Enable );
+
+    uint8_t error = i2c_port -> endTransmission();
+    if (error != 0){
+
+        if(debug_port){
+            debug_port -> print("Error has ocurred in the transmission\n");
+        }
+
+        return 1;    
+    }
+
+    return 0;
+
+}
+
+
 
 
 float Ag105::getChargeCurrent(){
@@ -339,4 +360,127 @@ int16_t Ag105::getRecoveryTime(){
 
     RecoveryTime = (int16_t)I2C_value * 3;
     return RecoveryTime;
+}
+
+float Ag105::getMeasuredBatteryVoltage(){
+    uint8_t I2C_value;
+
+    i2c_port -> beginTransmission(Ag105_Address);
+    i2c_port -> write(MEASURED_BATTERY_VOLTAGE);
+    i2c_port -> endTransmission();
+
+    if((i2c_port -> requestFrom(Ag105_Address, 2)) != 2){
+       
+        if(debug_port){
+            debug_port -> print("Error: There are less than 2 bytes available for reading");
+        }
+        return -1;
+
+    }
+
+    i2c_port -> read();//Status is ignored
+
+    I2C_value = i2c_port -> read();
+
+    if(I2C_value == 0xFF){
+        if(debug_port){
+            debug_port -> println("Error: Vin below 9 volts or System error.");
+        }
+        return -2.0;
+    }
+
+    float BatteryVoltage = (float)I2C_value * 0.064;
+    return BatteryVoltage;
+
+
+}
+
+
+float Ag105::getMeasuredChargeCurrent(){
+    uint8_t I2C_value;
+
+    i2c_port -> beginTransmission(Ag105_Address);
+    i2c_port -> write(MEASURED_CHARGE_CURRENT);
+    i2c_port -> endTransmission();
+
+    if((i2c_port -> requestFrom(Ag105_Address, 2)) != 2){
+       
+        if(debug_port){
+            debug_port -> print("Error: There are less than 2 bytes available for reading");
+        }
+        return -1;
+
+    }
+
+    i2c_port -> read();//Status is ignored
+
+    I2C_value = i2c_port -> read();
+
+    if(I2C_value == 0xFF){
+        if(debug_port){
+            debug_port -> println("Error: Vin below 9 volts or System error.");
+        }
+        return -2.0;
+    }
+
+    float ChargeCurrent = (float)I2C_value * 0.011;
+    return ChargeCurrent;
+
+}
+
+
+float Ag105::getMeasuredInputVoltage(){
+    uint8_t I2C_value;
+    float InputVoltage;
+
+    i2c_port -> beginTransmission(Ag105_Address);
+    i2c_port -> write(MEASURED_INPUT_VOLTAGE);
+    i2c_port -> endTransmission();
+
+    if((i2c_port -> requestFrom(Ag105_Address, 2)) != 2){
+       
+        if(debug_port){
+            debug_port -> println("Error: There are less than 2 bytes available for reading");
+        }
+        return -1;
+
+    }
+
+    i2c_port -> read();//Status is ignored
+
+    I2C_value = i2c_port -> read();
+
+    if(I2C_value == 0xFF){
+        if(debug_port){
+            debug_port -> println("Error: Vin below 9 volts or System error.");
+        }
+        return -2.0;
+    }
+
+    InputVoltage = (float)I2C_value * 0.141;
+    return InputVoltage;
+}
+
+
+int8_t Ag105::getJEITAProfile(){
+    uint8_t JEITAProfile;
+
+    i2c_port -> beginTransmission(Ag105_Address);
+    i2c_port -> write(EXTENDED_JEITA_PROFILE);
+    i2c_port -> endTransmission();
+
+    if((i2c_port -> requestFrom(Ag105_Address, 2)) != 2){
+       
+        if(debug_port){
+            debug_port -> println("Error: There are less than 2 bytes available for reading");
+        }
+        return -1;
+    }
+
+    i2c_port -> read();//Status is ignored
+
+    JEITAProfile = i2c_port -> read();
+
+    return (int8_t) JEITAProfile;
+
 }
