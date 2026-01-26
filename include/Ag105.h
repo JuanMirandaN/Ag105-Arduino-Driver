@@ -35,6 +35,11 @@
             uint8_t setTimeout(float Timeout);
             uint8_t setRecoveryTime(float RecoveryTime);
             uint8_t setJEITAProfile(bool Enable);
+            uint8_t setI2CAddress(uint8_t Address);
+
+            
+            uint8_t ResetMemory();
+
 
             //Getters
             float getChargeCurrent();
@@ -46,6 +51,10 @@
             float getMeasuredChargeCurrent();
             float getMeasuredInputVoltage();
             int8_t getJEITAProfile();
+            int16_t getMajorFirmwareVersion();
+            int16_t getMinorFirmwareVersion();
+            int16_t getI2CAddress();
+            uint8_t getStatus();
 
             
             

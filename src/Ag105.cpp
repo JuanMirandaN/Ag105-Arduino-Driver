@@ -199,6 +199,70 @@ uint8_t Ag105::setJEITAProfile(bool Enable){
 }
 
 
+uint8_t Ag105::setI2CAddress(uint8_t Address){
+
+    if (Address < 0x01 || Address > 0x7f){
+        if(debug_port){
+            debug_port -> print("Error: Invalid I2C address.\n");
+        }
+        return 1;
+    }
+
+    i2c_port -> beginTransmission(Ag105_Address);
+    i2c_port -> write(CHANGE_I2C_ADDRESS);
+    i2c_port -> write(Address);
+
+    uint8_t error = i2c_port -> endTransmission();
+    if (error != 0){
+
+        if(debug_port){
+            debug_port -> print("Error has ocurred in the transmission\n");
+        }
+
+        return 1;    
+    }
+
+    Ag105_Address = Address; //Update the I2C address.
+
+    return 0;
+
+}
+
+
+
+
+
+
+
+
+uint8_t Ag105::ResetMemory(){
+    i2c_port -> beginTransmission(Ag105_Address);
+    i2c_port -> write(RESET_MEMORY);
+    i2c_port -> write((uint8_t)1);
+
+    uint8_t error = i2c_port -> endTransmission();
+    if (error != 0){
+
+        if(debug_port){
+            debug_port -> print("Error has ocurred in the transmission\n");
+        }
+
+        return 1;    
+    }
+
+    delay(10);//is this really needed??
+
+    return 0;
+
+
+}
+
+
+
+
+
+
+
 
 
 float Ag105::getChargeCurrent(){
@@ -484,3 +548,106 @@ int8_t Ag105::getJEITAProfile(){
     return (int8_t) JEITAProfile;
 
 }
+
+
+int16_t Ag105::getMajorFirmwareVersion(){
+    uint8_t version;
+
+    i2c_port -> beginTransmission(Ag105_Address);
+    i2c_port -> write(MAJOR_FIRMWARE_VERSION);
+    i2c_port -> endTransmission();
+
+    if((i2c_port -> requestFrom(Ag105_Address, 2)) != 2){
+       
+        if(debug_port){
+            debug_port -> println("Error: There are less than 2 bytes available for reading");
+        }
+        return -1;
+    }
+
+    i2c_port -> read();//Status is ignored
+
+    version = i2c_port -> read();
+
+    return (int16_t) version;
+
+}
+
+
+int16_t Ag105::getMinorFirmwareVersion(){
+    uint8_t version;
+
+    i2c_port -> beginTransmission(Ag105_Address);
+    i2c_port -> write(MINOR_FIRMWARE_VERSION);
+    i2c_port -> endTransmission();
+
+    if((i2c_port -> requestFrom(Ag105_Address, 2)) != 2){
+       
+        if(debug_port){
+            debug_port -> println("Error: There are less than 2 bytes available for reading");
+        }
+        return -1;
+    }
+
+    i2c_port -> read();//Status is ignored
+
+    version = i2c_port -> read();
+
+    return (int16_t) version;
+
+}
+
+int16_t Ag105::getI2CAddress(){
+    uint8_t Address;
+
+    i2c_port -> beginTransmission(Ag105_Address);
+    i2c_port -> write(CHANGE_I2C_ADDRESS);
+    i2c_port -> endTransmission();
+
+    if((i2c_port -> requestFrom(Ag105_Address, 2)) != 2){
+       
+        if(debug_port){
+            debug_port -> println("Error: There are less than 2 bytes available for reading");
+        }
+        return -1;
+    }
+
+    i2c_port -> read();//Status is ignored
+
+    Address = i2c_port -> read();
+
+    return (int16_t) Address;
+}
+
+
+int16_t Ag105::getStatus(){
+    uint8_t Status;
+
+    i2c_port -> beginTransmission(Ag105_Address);
+    i2c_port -> write(MINOR_FIRMWARE_VERSION);
+    i2c_port -> endTransmission();
+
+    if((i2c_port -> requestFrom(Ag105_Address, 2)) != 2){
+       
+        if(debug_port){
+            debug_port -> println("Error: There are less than 2 bytes available for reading");
+        }
+        return -1;
+    }
+
+    Status = i2c_port -> read();
+
+    i2c_port -> read();//firmware version is ignored
+
+    if(debug_port){
+        debug_port -> println();
+
+
+    }
+
+    return (int16_t) Status;
+}
+
+
+
+
