@@ -3,7 +3,7 @@
 #include <Ag105.h>
 
 
-Ag105 :: Ag105(uint8_t Ag105_Address_, TwoWire* i2c_port_, Stream* debug_port_)
+Ag105::Ag105(uint8_t Ag105_Address_, TwoWire* i2c_port_, Stream* debug_port_)
     :Ag105_Address(Ag105_Address_),
      i2c_port(i2c_port_),
      debug_port(debug_port_){
@@ -14,7 +14,7 @@ Ag105 :: Ag105(uint8_t Ag105_Address_, TwoWire* i2c_port_, Stream* debug_port_)
 // put function definitions here:
 
 
-uint8_t Ag105 :: setChargeCurrent(float current_value_mA){
+uint8_t Ag105::setChargeCurrent(float current_value_mA){
     uint8_t I2C_value;
 
     if(current_value_mA > 2500 || current_value_mA < 100){
@@ -24,7 +24,7 @@ uint8_t Ag105 :: setChargeCurrent(float current_value_mA){
 
         return 1;
     }else{
-        if(current_value_mA >= 250 && current_value_mA <= 2000){
+        if(current_value_mA >= 250 && current_value_mA <= 2000.1){
             I2C_value = (uint8_t) round(((2500.0 - current_value_mA)/250.0));
         }else if(current_value_mA < 250){
             I2C_value = (uint8_t) round(((700.0 - current_value_mA)/50.0));
@@ -54,22 +54,23 @@ uint8_t Ag105 :: setChargeCurrent(float current_value_mA){
 }
 
 
-uint8_t Ag105 :: setBatteryVoltage(float battery_voltage){//TO FIX
+uint8_t Ag105::setBatteryVoltage(float battery_voltage){
     uint8_t I2C_value;
-    if(battery_voltage >= 3.9 && battery_voltage <= 12.6){
-        if(battery_voltage <= 4.2){
-            I2C_value = round((battery_voltage - 3.9)/0.1) + 1;
-        }else if(battery_voltage <= 8.4){//WHAT IF BATTERY_VOLTAGE IS 6.0???
-            I2C_value = round((battery_voltage - 7.8)/0.2) + 5;
-        }else{
-            I2C_value = round((battery_voltage - 11.7)/0.3) + 9;
+    if(battery_voltage >= 3.89 && battery_voltage <= 4.21){
+        I2C_value = round((battery_voltage - 3.9)/0.1) + 1;
+    }else if(battery_voltage >= 7.79 && battery_voltage <= 8.49){
+        I2C_value = round((battery_voltage - 7.8)/0.2) + 5;
+    }else if(battery_voltage >= 11.69 && battery_voltage <= 12.69){
+        I2C_value = round((battery_voltage - 11.7)/0.3) + 9;
+    }else if(battery_voltage < 0){
+        I2C_value = 0;//External resistor config
+    }else{
+        if(debug_port){
+            debug_port -> println("Error: The battery voltage is not valid.");
+            return 1;
         }
     }
 
-
-    if(battery_voltage == -1.0){
-        I2C_value = 0;
-    }
     
     i2c_port -> beginTransmission(Ag105_Address);
     i2c_port -> write(BATTERY_VOLTAGE_SETTING);
@@ -89,7 +90,7 @@ uint8_t Ag105 :: setBatteryVoltage(float battery_voltage){//TO FIX
 }
 
 
-uint8_t Ag105 :: setMPPTVoltage(float MPPT_Voltage){
+uint8_t Ag105::setMPPTVoltage(float MPPT_Voltage){
     uint8_t I2C_value = round((MPPT_Voltage - 11.0)/0.088);
     if(I2C_value > 250){
         I2C_value = 250;
@@ -119,7 +120,10 @@ uint8_t Ag105 :: setMPPTVoltage(float MPPT_Voltage){
 
 }
 
-float Ag105 :: getChargeCurrent(){
+
+
+
+float Ag105::getChargeCurrent(){
     uint8_t Status;
     uint8_t I2C_value;
     float current_value_mA;
@@ -145,6 +149,8 @@ float Ag105 :: getChargeCurrent(){
             current_value_mA = (float) (2500.0 - I2C_value * 250.0);
         }else if(I2C_value > 9){
             current_value_mA = (float) (700.0 - I2C_value * 50.0);    
+        }else if(I2C_value == 0){
+            current_value_mA = -333.333;//external resistor mode
         }else{
             current_value_mA = 2500.0; 
         }
@@ -153,7 +159,44 @@ float Ag105 :: getChargeCurrent(){
     }
 }
 
-float Ag105 :: getMPPTVoltage(){
+
+float Ag105::getBatteryVoltage(){
+    uint8_t I2C_value;
+    i2c_port -> beginTransmission(Ag105_Address);
+    i2c_port -> write(BATTERY_VOLTAGE_SETTING);
+    i2c_port -> endTransmission();
+
+    i2c_port -> requestFrom(Ag105_Address, 2);
+
+    if(i2c_port -> available() != 2){
+        if(debug_port){
+            debug_port -> print("Error: There are less than 2 bytes available for reading");
+        }
+        return -1.0;
+
+    }else{
+        i2c_port -> read();
+        I2C_value = i2c_port -> read();
+        
+        float Battery_Voltage = -1.0;
+
+        if(I2C_value >=1 && I2C_value <=4){
+            Battery_Voltage = 3.8 + I2C_value * 0.1;
+        }else if(I2C_value >=5 && I2C_value <= 8){
+            Battery_Voltage = 7.8 + (I2C_value - 5) * 0.2;
+        }else if(I2C_value >=9 && I2C_value <= 12){
+            Battery_Voltage = 11.7 + (I2C_value - 9) * 0.3;
+        }else if(I2C_value == 0){
+            Battery_Voltage = -333.333;//external resistor mode
+        }
+
+        return Battery_Voltage;
+    }
+
+}
+
+
+float Ag105::getMPPTVoltage(){
     uint8_t Status;
     uint8_t I2C_value;
 
@@ -176,8 +219,14 @@ float Ag105 :: getMPPTVoltage(){
         Status = i2c_port -> read();
         I2C_value = i2c_port -> read();
 
-        float MPPT_Voltage = I2C_value*0.088 + 11;
+        float MPPT_Voltage;
 
+        if(I2C_value >=251){
+            MPPT_Voltage = -333.333; //external resistor config
+        }else{
+            MPPT_Voltage = I2C_value*0.088 + 11;
+        }
+        
         return MPPT_Voltage;
     }
 }
