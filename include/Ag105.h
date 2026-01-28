@@ -1,6 +1,6 @@
-#ifndef AG105_CLASS
+#ifndef AG105_H
     #include <stdint.h>
-    #define AG105_CLASS
+    #define AG105_H
 
     //Field IDs
     #define CHARGE_CURRENT_SETTING 0x00
@@ -54,7 +54,24 @@
             int16_t getMajorFirmwareVersion();
             int16_t getMinorFirmwareVersion();
             int16_t getI2CAddress();
-            uint8_t getStatus();
+            int16_t getStatusRegister();
+
+            int8_t getGENSTAT();
+
+
+            bool isMPPTActive();
+
+
+            bool isPowerTrackingActive();
+
+            bool inConstantVoltage();
+
+            bool inConstantCurrent();
+
+            bool isThermalLimiting();
+
+            int16_t ReportStatus();
+
 
             
             

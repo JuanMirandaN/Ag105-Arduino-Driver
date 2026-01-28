@@ -19,7 +19,7 @@ uint8_t Ag105::setChargeCurrent(float current_value_mA){
 
     if(current_value_mA > 2500 || current_value_mA < 100){
         if(debug_port){
-            (*debug_port).print("Error, input current is off limits\n");
+            debug_port -> print("Error, input current is off limits\n");
         }
 
         return 1;
@@ -36,15 +36,15 @@ uint8_t Ag105::setChargeCurrent(float current_value_mA){
 
     }
 
-    (*i2c_port).beginTransmission(Ag105_Address);
-    (*i2c_port).write(CHARGE_CURRENT_SETTING);
-    (*i2c_port).write(I2C_value);
+    i2c_port -> beginTransmission(Ag105_Address);
+    i2c_port -> write(CHARGE_CURRENT_SETTING);
+    i2c_port -> write(I2C_value);
 
-    uint8_t error = (*i2c_port).endTransmission();
+    uint8_t error = i2c_port -> endTransmission();
     if (error != 0){
 
         if(debug_port){
-            (*debug_port).print("Error has ocurred in the transmission\n");
+            debug_port -> print("Error has ocurred in the transmission\n");
         }
 
         return 1;    
@@ -91,7 +91,7 @@ uint8_t Ag105::setBatteryVoltage(float battery_voltage){
 
 
 uint8_t Ag105::setMPPTVoltage(float MPPT_Voltage){
-    uint8_t I2C_value = round((MPPT_Voltage - 11.0)/0.088);
+    int16_t I2C_value = round((MPPT_Voltage - 11.0)/0.088);
     if(I2C_value > 250){
         I2C_value = 250;
     }else if(I2C_value < 0){
@@ -250,7 +250,7 @@ uint8_t Ag105::ResetMemory(){
         return 1;    
     }
 
-    delay(10);//is this really needed??
+    delay(10);//security delay to avoid Ag105 NACK
 
     return 0;
 
@@ -270,22 +270,22 @@ float Ag105::getChargeCurrent(){
     uint8_t I2C_value;
     float current_value_mA;
 
-    (*i2c_port).beginTransmission(Ag105_Address);
+    i2c_port -> beginTransmission(Ag105_Address);
     
-    (*i2c_port).write(CHARGE_CURRENT_SETTING);
+    i2c_port -> write(CHARGE_CURRENT_SETTING);
     
-    (*i2c_port).endTransmission();//STOP
-    (*i2c_port).requestFrom(Ag105_Address, 2); //START ON READ MODE request 2 bytes STATUS + Current value 
+    i2c_port -> endTransmission();//STOP
+    i2c_port -> requestFrom(Ag105_Address, 2); //START ON READ MODE request 2 bytes STATUS + Current value 
 
-    if((*i2c_port).available() != 2){
+    if(i2c_port -> available() != 2){
         if(debug_port){
-            (*debug_port).print("Error: There are less than 2 bytes available for reading");
+            debug_port -> print("Error: There are less than 2 bytes available for reading");
         }
 
         return -1.0;
     }else{
-        Status = (*i2c_port).read();
-        I2C_value = (*i2c_port).read();
+        Status = i2c_port -> read();
+        I2C_value = i2c_port -> read();
 
         if(I2C_value >= 2 && I2C_value <= 9){
             current_value_mA = (float) (2500.0 - I2C_value * 250.0);
@@ -620,7 +620,7 @@ int16_t Ag105::getI2CAddress(){
 }
 
 
-int16_t Ag105::getStatus(){
+int16_t Ag105::getStatusRegister(){
     uint8_t Status;
 
     i2c_port -> beginTransmission(Ag105_Address);
@@ -639,15 +639,179 @@ int16_t Ag105::getStatus(){
 
     i2c_port -> read();//firmware version is ignored
 
-    if(debug_port){
-        debug_port -> println();
-
-
-    }
-
     return (int16_t) Status;
 }
 
+int8_t Ag105::getGENSTAT(){
+    int16_t Status = getStatusRegister();
+    uint8_t GENSTAT;
+
+    if (Status == -1){
+        if(debug_port){
+            debug_port -> println("Error reading status.");
+        }
+        return -1;
+    }else{
+        GENSTAT = (Status & 0x0007);
+
+        if(debug_port){
+
+            switch(GENSTAT){
+                case(0):
+                    debug_port -> println("GENSTAT: Battery Disconnect.");
+                    break;
+
+                case(1):
+                    debug_port -> println("GENSTAT: Low Power.");
+                    break;
+
+                case(2):
+                    debug_port -> println("GENSTAT: Charging.");
+                    break;
+                case(3):
+                    debug_port -> println("GENSTAT: Fully Charged.");
+                    break;
+                case(4):
+                    debug_port -> println("GENSTAT: Bring-Up Charge.");
+                    break;
+                case(5):
+                    debug_port -> println("GENSTAT: OC/regulation error.");
+                    break;
+                case(6):
+                    debug_port -> println("GENSTAT: Thermal Shutdown.");
+                    break;
+                case(7):
+                    debug_port -> println("GENSTAT: Timeout Error.");
+                    break;                                                                        
+            }
+        }
+
+        return GENSTAT;
+    }
+}
+
+bool Ag105::isMPPTActive(){
+    int16_t Status = getStatusRegister();
+
+    if(Status == -1){
+        return false;
+    }else{
+            return (Status & 0x0008);
+    }
+}
+
+bool Ag105::isPowerTrackingActive(){
+    int16_t Status = getStatusRegister();
+    if(Status == -1){
+        return false;
+    }else{
+        return (Status & 0x0010);
+    }
+}
+
+bool Ag105::inConstantVoltage(){
+    int16_t Status = getStatusRegister();
+    if(Status == -1){
+        return false;
+    }else{
+        return (Status & 0x0020);
+    }
+}
+
+bool Ag105::inConstantCurrent(){
+    int16_t Status = getStatusRegister();
+    if(Status == -1){
+        return false;
+    }else{
+        return (Status & 0x0040);
+    }
+}
+
+bool Ag105::isThermalLimiting(){
+    int16_t Status = getStatusRegister();
+    if(Status == -1){
+        return false;
+    }else{
+        return (Status & 0x0080);
+    }
+}
 
 
+int16_t Ag105::ReportStatus(){
+    int16_t Status = getStatusRegister();
+    uint8_t GENSTAT;
 
+
+    if (Status == -1){
+        if(debug_port){
+            debug_port -> println("Error reading status.");
+        }
+        return -1;
+    }else{
+        GENSTAT = (Status & 0x0007);
+
+        if(debug_port){
+
+            switch(GENSTAT){
+                case(0):
+                    debug_port -> println("GENSTAT: Battery Disconnect.");
+                    break;
+
+                case(1):
+                    debug_port -> println("GENSTAT: Low Power.");
+                    break;
+
+                case(2):
+                    debug_port -> println("GENSTAT: Charging.");
+                    break;
+                case(3):
+                    debug_port -> println("GENSTAT: Fully Charged.");
+                    break;
+                case(4):
+                    debug_port -> println("GENSTAT: Bring-Up Charge.");
+                    break;
+                case(5):
+                    debug_port -> println("GENSTAT: OC/regulation error.");
+                    break;
+                case(6):
+                    debug_port -> println("GENSTAT: Thermal Shutdown.");
+                    break;
+                case(7):
+                    debug_port -> println("GENSTAT: Timeout Error.");
+                    break;                                                                        
+            }
+
+            if(Status & 0x0008){
+                debug_port -> println("MPPT Enabled.");
+            }else{
+                debug_port -> println("MPPT Disabled.");
+            }
+
+            if(Status & 0x0010){
+                debug_port -> println("Charge profile is tracking the input power.");
+            }else{
+                debug_port -> println("Charge profile is NOT tracking the input power.");
+            }
+
+            if(Status & 0x0020){
+                debug_port -> println("Ag105 is in constant voltage mode.");
+            }else{
+                debug_port -> println("Ag105 is NOT in constant voltage mode.");
+            }
+
+            if(Status & 0x0040){
+                debug_port -> println("Ag105 is in constant current mode.");
+            }else{
+                debug_port -> println("Ag105 is NOT in constant current mode.");
+            }
+
+            if(Status & 0x0080){
+                debug_port -> println("Charge profile is limited due to battery temperature.");
+            }else{
+                debug_port -> println("Charge profile is NOT limited due to battery temperature.");
+            }
+        }
+
+        return Status;
+    }
+}
