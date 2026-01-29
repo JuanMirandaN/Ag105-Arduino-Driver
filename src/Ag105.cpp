@@ -44,11 +44,16 @@ uint8_t Ag105::setChargeCurrent(float current_value_mA){
     if (error != 0){
 
         if(debug_port){
-            debug_port -> print("Error has ocurred in the transmission\n");
+            debug_port -> print("Transmission Error: Charge Current not set\n");
         }
 
         return 1;    
     }
+    
+    // if(debug_port){
+    //     debug_port -> print("Charge Current set successfully");
+    // }
+
     return 0;
 
 }
@@ -80,11 +85,15 @@ uint8_t Ag105::setBatteryVoltage(float battery_voltage){
     if (error != 0){
 
         if(debug_port){
-            debug_port -> print("Error has ocurred in the transmission\n");
+            debug_port -> print("Transmission Error: Battery Voltage not set\n");
         }
 
         return 1;    
     }
+
+    // if(debug_port){
+    //     debug_port -> println("Battery Voltage set successfully");
+    // }
 
     return 0;
 }
@@ -110,12 +119,15 @@ uint8_t Ag105::setMPPTVoltage(float MPPT_Voltage){
     if (error != 0){
 
         if(debug_port){
-            debug_port -> print("Error has ocurred in the transmission\n");
+            debug_port -> print("Transmission Error: MPPT Voltage not set\n");
         }
 
         return 1;    
     }
 
+    // if(debug_port){
+    //     debug_port -> println("MPPT Voltage set successfully");
+    // }
     return 0;
 
 }
@@ -138,11 +150,15 @@ uint8_t Ag105::setTimeout(float Timeout){
     if (error != 0){
 
         if(debug_port){
-            debug_port -> print("Error has ocurred in the transmission\n");
+            debug_port -> print("Transmission Error: Timeout not set\n");
         }
 
         return 1;    
     }
+
+    // if(debug_port){
+    //     debug_port -> print("Timeout set successfully\n");
+    // }
 
     return 0;
 
@@ -167,12 +183,15 @@ uint8_t Ag105::setRecoveryTime(float RecoveryTime){
     if (error != 0){
 
         if(debug_port){
-            debug_port -> print("Error has ocurred in the transmission\n");
+            debug_port -> print("Transmission Error: Recovery time not set\n");
         }
 
         return 1;    
     }
 
+    // if(debug_port){
+    //     debug_port -> print("Recovery Time set successfully\n");
+    // }
     return 0;
 
 }
@@ -188,11 +207,15 @@ uint8_t Ag105::setJEITAProfile(bool Enable){
     if (error != 0){
 
         if(debug_port){
-            debug_port -> print("Error has ocurred in the transmission\n");
+            debug_port -> print("Transmission Error: JEITA Profile not set\n");
         }
 
         return 1;    
     }
+
+    // if(debug_port){
+    //     debug_port -> print("JEITA Profile set successfully\n");
+    // }
 
     return 0;
 
@@ -216,13 +239,17 @@ uint8_t Ag105::setI2CAddress(uint8_t Address){
     if (error != 0){
 
         if(debug_port){
-            debug_port -> print("Error has ocurred in the transmission\n");
+            debug_port -> print("Transmission Error: I2C Address not set\n");
         }
 
         return 1;    
     }
 
     Ag105_Address = Address; //Update the I2C address.
+
+    // if(debug_port){
+    //     debug_port -> print("I2C Address set successfully\n");
+    // }
 
     return 0;
 
@@ -244,13 +271,17 @@ uint8_t Ag105::ResetMemory(){
     if (error != 0){
 
         if(debug_port){
-            debug_port -> print("Error has ocurred in the transmission\n");
+            debug_port -> print("Transmission Error: Memory Reset failed\n");
         }
 
         return 1;    
     }
 
     delay(10);//security delay to avoid Ag105 NACK
+
+    // if(debug_port){
+    //     debug_port -> print("Memory reset successfully\n");
+    // }
 
     return 0;
 
@@ -266,7 +297,6 @@ uint8_t Ag105::ResetMemory(){
 
 
 float Ag105::getChargeCurrent(){
-    uint8_t Status;
     uint8_t I2C_value;
     float current_value_mA;
 
@@ -279,12 +309,12 @@ float Ag105::getChargeCurrent(){
 
     if(i2c_port -> available() != 2){
         if(debug_port){
-            debug_port -> print("Error: There are less than 2 bytes available for reading");
+            debug_port -> print("Error: There are less than 2 bytes available for reading\n");
         }
 
         return -1.0;
     }else{
-        Status = i2c_port -> read();
+        i2c_port -> read();
         I2C_value = i2c_port -> read();
 
         if(I2C_value >= 2 && I2C_value <= 9){
@@ -312,7 +342,7 @@ float Ag105::getBatteryVoltage(){
 
     if(i2c_port -> available() != 2){
         if(debug_port){
-            debug_port -> print("Error: There are less than 2 bytes available for reading");
+            debug_port -> print("Error: There are less than 2 bytes available for reading\n");
         }
         return -1.0;
 
@@ -339,7 +369,6 @@ float Ag105::getBatteryVoltage(){
 
 
 float Ag105::getMPPTVoltage(){
-    uint8_t Status;
     uint8_t I2C_value;
 
     i2c_port -> beginTransmission(Ag105_Address);
@@ -353,12 +382,12 @@ float Ag105::getMPPTVoltage(){
 
     if(i2c_port -> available() != 2){
         if(debug_port){
-            debug_port -> print("Error: There are less than 2 bytes available for reading");
+            debug_port -> print("Error: There are less than 2 bytes available for reading\n");
         }
         return -1.0;
 
     }else{
-        Status = i2c_port -> read();
+        i2c_port -> read();
         I2C_value = i2c_port -> read();
 
         float MPPT_Voltage;
@@ -385,7 +414,7 @@ int16_t Ag105::getTimeout(){
     if((i2c_port -> requestFrom(Ag105_Address, 2)) != 2){
        
         if(debug_port){
-            debug_port -> print("Error: There are less than 2 bytes available for reading");
+            debug_port -> print("Error: There are less than 2 bytes available for reading\n");
         }
         return -1;
 
@@ -412,7 +441,7 @@ int16_t Ag105::getRecoveryTime(){
     if((i2c_port -> requestFrom(Ag105_Address, 2)) != 2){
        
         if(debug_port){
-            debug_port -> print("Error: There are less than 2 bytes available for reading");
+            debug_port -> print("Error: There are less than 2 bytes available for reading\n");
         }
         return -1;
 
@@ -436,7 +465,7 @@ float Ag105::getMeasuredBatteryVoltage(){
     if((i2c_port -> requestFrom(Ag105_Address, 2)) != 2){
        
         if(debug_port){
-            debug_port -> print("Error: There are less than 2 bytes available for reading");
+            debug_port -> print("Error: There are less than 2 bytes available for reading\n");
         }
         return -1;
 
@@ -470,7 +499,7 @@ float Ag105::getMeasuredChargeCurrent(){
     if((i2c_port -> requestFrom(Ag105_Address, 2)) != 2){
        
         if(debug_port){
-            debug_port -> print("Error: There are less than 2 bytes available for reading");
+            debug_port -> print("Error: There are less than 2 bytes available for reading\n");
         }
         return -1;
 
@@ -739,12 +768,25 @@ bool Ag105::isThermalLimiting(){
 
 int16_t Ag105::ReportStatus(){
     int16_t Status = getStatusRegister();
+
+    float BatteryVoltage = getMeasuredBatteryVoltage();
+    float ChargeCurrent = getMeasuredChargeCurrent();
+    float InputVoltage = getMeasuredInputVoltage();
+
     uint8_t GENSTAT;
 
+    if(debug_port){
+        debug_port -> println("-----------------------------------------");
+        debug_port -> println("             STATUS REPORT               ");
+        debug_port -> println("-----------------------------------------");
+    }
 
     if (Status == -1){
         if(debug_port){
-            debug_port -> println("Error reading status.");
+            debug_port -> println("-Error reading status.");
+            debug_port -> println("-----------------------------------------");
+            debug_port -> println("                                         ");
+            debug_port -> println("-----------------------------------------");
         }
         return -1;
     }else{
@@ -754,64 +796,141 @@ int16_t Ag105::ReportStatus(){
 
             switch(GENSTAT){
                 case(0):
-                    debug_port -> println("GENSTAT: Battery Disconnect.");
+                    debug_port -> println("- GENSTAT: Battery Disconnect.");
                     break;
 
                 case(1):
-                    debug_port -> println("GENSTAT: Low Power.");
+                    debug_port -> println("- GENSTAT: Low Power.");
                     break;
 
                 case(2):
-                    debug_port -> println("GENSTAT: Charging.");
+                    debug_port -> println("- GENSTAT: Charging.");
                     break;
                 case(3):
-                    debug_port -> println("GENSTAT: Fully Charged.");
+                    debug_port -> println("- GENSTAT: Fully Charged.");
                     break;
                 case(4):
-                    debug_port -> println("GENSTAT: Bring-Up Charge.");
+                    debug_port -> println("- GENSTAT: Bring-Up Charge.");
                     break;
                 case(5):
-                    debug_port -> println("GENSTAT: OC/regulation error.");
+                    debug_port -> println("- GENSTAT: OC/regulation error.");
                     break;
                 case(6):
-                    debug_port -> println("GENSTAT: Thermal Shutdown.");
+                    debug_port -> println("- GENSTAT: Thermal Shutdown.");
                     break;
                 case(7):
-                    debug_port -> println("GENSTAT: Timeout Error.");
+                    debug_port -> println("- GENSTAT: Timeout Error.");
                     break;                                                                        
             }
 
             if(Status & 0x0008){
-                debug_port -> println("MPPT Enabled.");
+                debug_port -> println("- MPPT Enabled.");
             }else{
-                debug_port -> println("MPPT Disabled.");
+                debug_port -> println("- MPPT Disabled.");
             }
 
             if(Status & 0x0010){
-                debug_port -> println("Charge profile is tracking the input power.");
+                debug_port -> println("- Charge profile is tracking the input power.");
             }else{
-                debug_port -> println("Charge profile is NOT tracking the input power.");
+                debug_port -> println("- Charge profile is NOT tracking the input power.");
             }
 
             if(Status & 0x0020){
-                debug_port -> println("Ag105 is in constant voltage mode.");
+                debug_port -> println("- Ag105 is in constant voltage mode.");
             }else{
-                debug_port -> println("Ag105 is NOT in constant voltage mode.");
+                debug_port -> println("- Ag105 is NOT in constant voltage mode.");
             }
 
             if(Status & 0x0040){
-                debug_port -> println("Ag105 is in constant current mode.");
+                debug_port -> println("- Ag105 is in constant current mode.");
             }else{
-                debug_port -> println("Ag105 is NOT in constant current mode.");
+                debug_port -> println("- Ag105 is NOT in constant current mode.");
             }
 
             if(Status & 0x0080){
-                debug_port -> println("Charge profile is limited due to battery temperature.");
+                debug_port -> println("- Charge profile is limited due to battery temperature.");
             }else{
-                debug_port -> println("Charge profile is NOT limited due to battery temperature.");
+                debug_port -> println("- Charge profile is NOT limited due to battery temperature.");
             }
+
+            debug_port -> print("Battery Voltage: ");
+            debug_port -> print(BatteryVoltage);
+            debug_port -> println("[V]");
+
+            debug_port -> print("Charge Current: ");
+            debug_port -> print(ChargeCurrent);
+            debug_port -> println("[mA]");
+
+            debug_port -> print("Input Voltage: ");
+            debug_port -> print(InputVoltage);
+            debug_port -> println("[V]");
+
+
+
+            debug_port -> println("-----------------------------------------");
+            debug_port -> println("                                         ");
+            debug_port -> println("-----------------------------------------");
         }
 
         return Status;
     }
+}
+
+
+void Ag105::ReportConfig(){
+    float ChargeCurrent = getChargeCurrent();
+    float BatteryVoltage = getBatteryVoltage();
+    float MPPTVoltage = getMPPTVoltage();
+    int16_t Timeout = getTimeout();
+    int16_t RecoveryTime = getRecoveryTime();
+    int8_t JEITAProfile = getJEITAProfile();
+    int16_t MajorVersion = getMajorFirmwareVersion();
+    int16_t MinorVersion = getMinorFirmwareVersion();
+    int16_t I2CAddress = getI2CAddress();
+
+
+    if(debug_port){
+        debug_port -> println("-----------------------------------------");
+        debug_port -> println("           CONFIGURATION REPORT          ");
+        debug_port -> println("-----------------------------------------");
+
+        debug_port -> print("Battery Voltage: ");
+        debug_port -> print(BatteryVoltage);
+        debug_port -> println("[V]");
+
+        debug_port -> print("Charge Current: ");
+        debug_port -> print(ChargeCurrent);
+        debug_port -> println("[mA]");
+
+        debug_port -> print("MPPT Voltage: ");
+        debug_port -> print(MPPTVoltage);
+        debug_port -> println("[V]");
+
+        debug_port -> print("Timeout: ");
+        debug_port -> println(Timeout);
+        
+        debug_port -> print("Recovery Time: ");
+        debug_port -> println(RecoveryTime);
+        
+        debug_port -> print("JEITA Profile: ");
+        JEITAProfile ? debug_port -> println("Enabled") : debug_port -> println("Disabled");
+
+        debug_port -> print("Firmware Version: ");
+        debug_port -> print(MajorVersion);
+        debug_port -> print(".");
+        debug_port -> println(MinorVersion);
+
+        debug_port -> print("I2C Address: ");
+        debug_port -> println(I2CAddress,HEX);
+
+
+
+        debug_port -> println("-----------------------------------------");
+        debug_port -> println("                                         ");
+        debug_port -> println("-----------------------------------------");
+
+
+
+    }
+    
 }

@@ -72,6 +72,7 @@
 
             int16_t ReportStatus();
 
+            void ReportConfig();
 
             
             
