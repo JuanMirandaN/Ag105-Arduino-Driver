@@ -259,9 +259,6 @@ uint8_t Ag105::setI2CAddress(uint8_t Address){
 
 
 
-
-
-
 uint8_t Ag105::ResetMemory(){
     i2c_port -> beginTransmission(Ag105_Address);
     i2c_port -> write(RESET_MEMORY);
@@ -784,9 +781,6 @@ int16_t Ag105::ReportStatus(){
     if (Status == -1){
         if(debug_port){
             debug_port -> println("-Error reading status.");
-            debug_port -> println("-----------------------------------------");
-            debug_port -> println("                                         ");
-            debug_port -> println("-----------------------------------------");
         }
         return -1;
     }else{
@@ -859,17 +853,12 @@ int16_t Ag105::ReportStatus(){
 
             debug_port -> print("Charge Current: ");
             debug_port -> print(ChargeCurrent);
-            debug_port -> println("[mA]");
+            debug_port -> println("[A]");
 
             debug_port -> print("Input Voltage: ");
             debug_port -> print(InputVoltage);
             debug_port -> println("[V]");
 
-
-
-            debug_port -> println("-----------------------------------------");
-            debug_port -> println("                                         ");
-            debug_port -> println("-----------------------------------------");
         }
 
         return Status;
@@ -923,11 +912,6 @@ void Ag105::ReportConfig(){
         debug_port -> print("I2C Address: ");
         debug_port -> println(I2CAddress,HEX);
 
-
-
-        debug_port -> println("-----------------------------------------");
-        debug_port -> println("                                         ");
-        debug_port -> println("-----------------------------------------");
 
 
 

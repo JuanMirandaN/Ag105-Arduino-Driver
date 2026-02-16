@@ -15,8 +15,9 @@ void setup() {
 uint8_t Ag105_Address = 0x30;
 Ag105 MPPT_Controller(Ag105_Address, &Wire, &Serial);
 
-uint16_t charge_current_new = 1020;
+uint16_t charge_current_new = 1020;//1020;
 
+float Battery_Voltage = 4.2;
 
 void loop() {
     // put your main code here, to run repeatedly:
@@ -31,7 +32,7 @@ void loop() {
 
 
 
-    float newMPPTVoltage = 17.43;
+    float newMPPTVoltage = 12;//17.43;
 
     MPPT_Controller.setMPPTVoltage(newMPPTVoltage);
 
@@ -44,6 +45,11 @@ void loop() {
     Serial.print("MPPT voltage is:");
     Serial.println(read_MPPT_Voltage);
     delay(1000);
+
+
+
+    MPPT_Controller.setBatteryVoltage(Battery_Voltage);
+
 
     MPPT_Controller.ReportStatus();
     MPPT_Controller.ReportConfig();
